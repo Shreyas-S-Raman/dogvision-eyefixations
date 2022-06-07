@@ -1,0 +1,24 @@
+{
+    "total_image_count": 10045,
+    "total_instance_count": 18160,
+    "maximum_instances": 42,
+    "total_counts": {
+        "lizard": 103,
+        "rabbit": 44,
+        "squirrel": 45,
+        "dog_toy": 287,
+        "dog": 293,
+        "cat": 296,
+        "bird": 289,
+        "car": 216,
+        "bus": 98,
+        "skyscraper": 85,
+        "flower": 267,
+        "raccoon": 24,
+        "ball": 135,
+        "skateboard": 54,
+        "train": 85,
+        "duck": 128,
+        "hamster": 30
+    }
+}

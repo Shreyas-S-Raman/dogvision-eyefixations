@@ -1,0 +1,42 @@
+{
+    "city_count": 6,
+    "total_image_count": 1525,
+    "maximum_instances": 6,
+    "total_counts": {
+        "ego vehicle": 1525,
+        "out of roi": 1525,
+        "rectification border": 1916
+    },
+    "berlin": {
+        "image_count": 2176,
+        "ego vehicle": 544,
+        "out of roi": 544
+    },
+    "bielefeld": {
+        "image_count": 724,
+        "ego vehicle": 181,
+        "rectification border": 724,
+        "out of roi": 181
+    },
+    "bonn": {
+        "image_count": 184,
+        "ego vehicle": 46,
+        "out of roi": 46
+    },
+    "leverkusen": {
+        "image_count": 232,
+        "ego vehicle": 58,
+        "out of roi": 58
+    },
+    "mainz": {
+        "image_count": 1192,
+        "ego vehicle": 298,
+        "rectification border": 1192,
+        "out of roi": 298
+    },
+    "munich": {
+        "image_count": 1592,
+        "ego vehicle": 398,
+        "out of roi": 398
+    }
+}

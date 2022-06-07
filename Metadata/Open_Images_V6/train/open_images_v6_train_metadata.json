@@ -1,0 +1,30 @@
+{
+    "total_image_count": 122154,
+    "total_instance_count": 335535,
+    "maximum_instances": 96,
+    "total_counts": {
+        "dog": 12604,
+        "squirrel": 1856,
+        "bus": 8891,
+        "dog_toy": 38427,
+        "truck": 10745,
+        "cat": 10904,
+        "bird": 15403,
+        "motorcycle": 11952,
+        "skyscraper": 30093,
+        "person": 21269,
+        "duck": 9912,
+        "ball": 3150,
+        "flower": 27544,
+        "train": 9845,
+        "car": 13796,
+        "lizard": 1890,
+        "mouse": 748,
+        "hamster": 514,
+        "fire_hydrant": 425,
+        "van": 6876,
+        "skateboard": 1354,
+        "raccoon": 342,
+        "rabbit": 88
+    }
+}
