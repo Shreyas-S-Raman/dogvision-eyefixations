@@ -531,13 +531,14 @@ def train():
     LOGDIR = os.path.relpath('./logs')
     DATE_TIME_STRING = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     EXPERIMENT_NO = 10
+    WEIGHT_FILENAME = None
     METRICS_DIR = os.path.join(LOGDIR, 'experiment_'+str(EXPERIMENT_NO),'metrics', DATE_TIME_STRING)
 
     if not os.path.isdir(METRICS_DIR):
         os.mkdir(METRICS_DIR)
 
     WEIGHTS_DIR = os.path.relpath("../samples/coco/mask_rcnn_coco_weights.h5")
-    WEIGHTS_DIR = os.path.relpath("./logs/experiment_8/weights/epoch_3_20220420-034124.h5")
+    WEIGHTS_DIR = os.path.relpath(f"./logs/experiment_{EXPERIMENT_NO}/weights/{WEIGHT_FILENAME}")
     NUM_EPOCHS = 20
     EXPERIMENT_NO = 10
     LAYERS = 'heads'
