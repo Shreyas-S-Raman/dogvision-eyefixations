@@ -152,7 +152,7 @@ We also curated a custom dataset of 1233 frames captured by eye-tracking cameras
 
 Each image has been manually annotated using polygon annotations (see below)
 ![Original Sample 1](assets/gt_original1.jpg)![Original Sample 2](assets/gt_original2.jpg)
-![Annotated Sample 1](assets/gt_annotated1.jpg)![Annotated Sample 2](assets/gt_annotated2.jpg)
+![Annotated Sample 1](assets/gt_annotated1.png)![Annotated Sample 2](assets/gt_annotated2.png)
 
 # Results
 
