@@ -22,8 +22,8 @@ import numpy as np
 import argparse
 
 #creating path to the datasets
-BASE_PATH = os.path.relpath('.')
-VIDEO_PATH = os.path.relpath('.')
+BASE_PATH = os.path.relpath('./Dog_Fixations')
+VIDEO_PATH = os.path.relpath('./Raw_Videos')
 
 #names of all dog videos
 dict = set(['goose', 'suna', 'kermit', 'daisy'])
@@ -66,12 +66,14 @@ def extract_fixation_frames(video_path=None, save_base_path=None):
     if not os.path.isdir(os.path.join(BASE_PATH, dog_name,'fixation_frames')):
         os.mkdir(os.path.join(BASE_PATH, dog_name, 'fixation_frames'))
 
+    assert dog_name+'.csv' in os.listdir(BASE_PATH,dog_name)
+
     SAVE_DIR = os.path.join(BASE_PATH, dog_name, 'fixation_frames')
 
 
 
     #read the fixation data in from CSV file
-    fixation_data = pd.read_csv(os.path.join(BASE_PATH, dog_name+'.csv'), encoding='utf-8')
+    fixation_data = pd.read_csv(os.path.join(BASE_PATH, dog_name, dog_name+'.csv'), encoding='utf-8')
     fixation_frames = fixation_data['FrameNumber'].values
 
     #track the current frame + index of target frame
