@@ -123,7 +123,7 @@ def display_instances(image, masks, class_names, caption_coords, figsize=(16, 16
         plt.show()
 
 
-ANNOTATION_PATH = os.path.relpath()
+ANNOTATION_PATH = os.path.relpath('../../Datasets/dog_video_dataset/annotations.json')
 SAMPLES_PATH = os.path.relpath('../ground_truth/samples')
 SAVE_PATH = os.path.relpath('../ground_truth')
 

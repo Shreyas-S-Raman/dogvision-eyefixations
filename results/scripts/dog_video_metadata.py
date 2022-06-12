@@ -5,7 +5,7 @@ import pdb
 
 #step 1: find correct path  + iterate through json files
 
-ANNOTATION_PATH = os.path.relpath()
+ANNOTATION_PATH = os.path.relpath('../../Datasets/dog_video_dataset/annotations.json')
 
 def check_class_names(joint_filename):
 
