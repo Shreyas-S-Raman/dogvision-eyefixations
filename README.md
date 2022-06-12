@@ -1,4 +1,4 @@
-#Dog Vision: Using object-detection to track visual behavior patterns in dogs
+# Dog Vision: Using object-detection to track visual behavior patterns in dogs
 
 This project utilizes the [Mask RCNN](https://arxiv.org/abs/1703.06870) provided by [matterport](https://github.com/matterport/Mask_RCNN) (on Python3, Keras and Tensorflow) to perform scene segmentation and object detection on images captured by a calibrated eye-tracking camera fitted on dogs.
 
@@ -7,7 +7,7 @@ This project utilizes the [Mask RCNN](https://arxiv.org/abs/1703.06870) provided
 
 Our work aims to track the regions of "fixation" across captured scenes and analyze the frequency/types of objects that dogs fixate upon; thus leveraging computer vision to automate detection. For more details on methodology and results, please refer to our [paper](paper link)
 
-#Project Overview
+# Project Overview
 
 The repository is structured in the following way:
 * `Mask_RCNN` contains the original matterport repository along with added scripts for custom dataset generation, model fine-tuning, evaluation and fixation prediction
@@ -17,13 +17,13 @@ The repository is structured in the following way:
 * `results` contains `scripts` to visualize predicted fixations (qualitatively/quantitatively) as well as compare to ground_truth annotations; the subset of `experiment_{}` folders also contain evaluation metrics + qualitative results (on image samples) from each experiment - to visualize/compare model performance
 <!-- * `additional_resources` NOT NEEDED IN FINAL REPO -->
 
-#Setting Up
+# Setting Up
 
 The codebase is designed to be modular and extendable to other datasets and/or applications that may be of interest.
 
 Before getting started, please familiarize yourself with the codebase structure and the [matterport Mask-RCNN](Mask_RCNN) repository. If you would like to better understand how Mask-RCNN technically works, consider reading the following articles [A](https://alittlepain833.medium.com/simple-understanding-of-mask-rcnn-134b5b330e95#:~:text=Mask%20RCNN%20is%20a%20deep,two%20stages%20of%20Mask%20RCNN) and [B](https://www.analyticsvidhya.com/blog/2019/07/computer-vision-implementing-mask-r-cnn-image-segmentation/)
 
-##Requirements
+## Requirements
 
 ```
 Python 3.4 (or higher), Tensorflow 1.15.0 (or higher), Keras 2.0.8 (or higher) and other packages listed in `requirements.txt`
@@ -63,7 +63,7 @@ To setup and check compatibility between your GPU setup and TensorFlow, please c
 * (optional) guides for installing [NVIDIA drivers](https://docs.nvidia.com/datacenter/tesla/tesla-installation-notes/index.html) and [CUDA toolkit](https://docs.nvidia.com/cuda/cuda-quick-start-guide/index.html) for GPU setup
 ```
 
-##Installation & Setup
+## Installation & Setup
 
 1. Clone this repository
 2. Follow the conda installation setup in step 1 of the section above
@@ -78,7 +78,7 @@ Run ```bash pip3 install -r requirements.txt```
 
 5. Unzip the extracted dataset and weight files
 
-#Training Pipeline
+# Training Pipeline
 
 [mask_rcnn_dataset.py](Mask_RCNN/mrcnn_pretrained_implementation/mask_rcnn_dataset.py) and [dataset_configs.json](Mask_RCNN/mrcnn_pretrained_implementation/dataset_configs.json) are the primary scripts used for fine-tuning the Mask-RCNN model
 
@@ -92,7 +92,7 @@ Run ```bash pip3 install -r requirements.txt```
 
 5. Run `python3 mask_rcnn_dataset.py` to run your new experiment. Track results within the `logs/experiment_<experiment number>` folder
 
-#Evaluation + Prediction Pipelines
+# Evaluation + Prediction Pipelines
 
 [mask_rcnn_evaluation.py](Mask_RCNN/mrcnn_pretrained_implementation/mask_rcnn_evaluation.py) and [mask_rcnn_prediction.py](Mask_RCNN/mrcnn_pretrained_implementation/mask_rcnn_prediction.py) are the primary scripts used for evaluating the fine-tuned models and generating fixation predictions
 
@@ -136,17 +136,17 @@ Track fixation prediction outputs (`<dog name>.csv` file) in the `fixation_predi
 
 ```
 
-#Datasets
+# Datasets
 
 Our work makes use of a variety of large existing image databases as well as a custom dataset of images captured by eye-tracking cameras mounted on the dogs being tested
 
-##External Datasets
+## External Datasets
 
 We utilize subsets of popular datasets including [MS COCO](https://cocodataset.org/#home), [OpenImagesV6](https://storage.googleapis.com/openimages/web/index.html) and [CtiyScapes](https://www.cityscapes-dataset.com/dataset-overview/#class-definitions). The subset of data used (pertaining to objects of interest in our study) are contained on the [Google Drive](https://drive.google.com/drive/folders/1LlePbNRisWorv8ycHr1H-uwVirSKSbDO?usp=sharing) repository
 
 To source additional data from the OIV6 dataset, please use the [open_images_v6_dataset_loader.py](Datasets/open_images_v6_dataset_loader.py) script to pull new data pertaining to specific objects/classes of interest.
 
-##Custom Dataset
+## Custom Dataset
 
 We also curated a custom dataset of 1233 frames captured by eye-tracking cameras mounted on the dogs used in the study; these have already been split intro training/validation sets within the [split_dataset.csv](Datasets/dog_video_dataset/split_dataset.csv) file
 
@@ -154,7 +154,7 @@ Each image has been manually annotated using polygon annotations (see below)
 ![Original Sample 1](assets/gt_original1.jpg)![Original Sample 2](assets/gt_original2.jpg)
 ![Annotated Sample 1](assets/gt_annotated1.jpg)![Annotated Sample 2](assets/gt_annotated2.jpg)
 
-#Results
+# Results
 
 An overview of our most interesting findings (averaged across all dogs) are visually presented below. For a more expansive exploration and thorough analysis of results, for each individual dog in the study, please refer to the [associated work](paper link)
 
@@ -164,17 +164,17 @@ An overview of our most interesting findings (averaged across all dogs) are visu
 
 Use the [scripts](results/scripts) provided to compare fixation predictions with ground truth and generate additional visualization of results
 
-##Future Ideas
+## Future Ideas
 
 This project will continue to develop and grow. Here are some features we plan to implement in the near future:
 * implement object detection and segmentation on live video
 * expand the existing dataset using video footage from new dogs
 * fine-tune models on new sets of objects + refine model performance
 
-#Contributing
+# Contributing
 
 Our team welcomes contributions to this repository and project; you can also join our team. For further correspondence, please reach out to the authors of the [associated work](paper link)
 
-#FAQs
+# FAQs
 
 Any FAQs and common issues will be updated in this section!
