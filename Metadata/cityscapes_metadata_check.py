@@ -1,16 +1,23 @@
 import os
 import json
 import pandas as pd
+import argparse
 
 '''CityScapes Classes: class name used in custom dataset (Cityscapes classname):
 1. car, 2. truck, 3. bus, 4. bicycle, 5. motorcycle,
 6. person, 7. rider (rider -person on a bike), 8. tree (vegetation), 9. grass (terrain), 10. sky (sky),
 11. road (road), 12. sidewalk (sidewalk/pavement), 13. building (building), 14. pole (pole), 15. wall (wall)'''
 
-#ROOT_DIR = '/home/ssunda11/Dog_Fixations/Datasets/gtFine/train'
-#ROOT_DIR = '/home/ssunda11/Dog_Fixations/Datasets/gtFine/test'
-ROOT_DIR = '/home/ssunda11/Dog_Fixations/Datasets/gtFine/val'
-METADATA_SAVE_DIR = '/home/ssunda11/Dog_Fixations/Metadata'
+
+#create arge parser
+parser = argparse.ArgumentParser()
+parser.add_argument('subset', required = True, choices = ['train','val','test'])
+
+args = parser.parse_args()
+
+
+ROOT_DIR = f'../Datasets/cityscapes_gtFine/{args.subset}'
+METADATA_SAVE_DIR = f'./CityScapes/{args.subset}'
 city_names = os.listdir(ROOT_DIR)
 
 class_count = {}

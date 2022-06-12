@@ -5,11 +5,18 @@ from matplotlib import pyplot as plt
 from PIL import Image
 import time
 import pdb
+import argparse
+
+#setup arg parser
+parser = argparse.ArgumentParser()
+parser.add_argument('--subset',required=True,choices=['train','val','test'])
+
+args = parser.parse_args()
 
 #opne iamges dataset directory
-ROOT_DIR = '/home/ssunda11/fiftyone/open-images-v6'
-PATH_END = 'test' #train test or validation
-METADATA_SAVE_DIR = '/home/ssunda11/Dog_Fixations/Metadata'
+ROOT_DIR = '~/fiftyone/open-images-v6'
+PATH_END = args.subset #train test or validation
+METADATA_SAVE_DIR = './Open_Images_V6'
 
 class_metadata_path = os.path.join(ROOT_DIR, PATH_END,'metadata')
 labels_path = os.path.join(ROOT_DIR, PATH_END, 'labels')

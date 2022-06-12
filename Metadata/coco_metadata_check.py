@@ -1,14 +1,20 @@
 import json
 import os 
-
+import argparse
 '''COCO Classes: class name used in custom dataset (COCO classname):
 '''
 
-ROOT_DIR = '/home/ssunda11/Dog_Fixations/Datasets/COCO/annotations/annotations/'
-DATASET = 'train'
+#create arg parser
+parser = argparse.ArgumentParser()
+parser.add_argument('--subset', required=True, choices = ['train','val','test'])
+
+args = parser.parse_args()
+
+ROOT_DIR = '../Datasets/COCO/annotations/annotations/'
+DATASET = args.subset
 JSON_ANNOT_FILE = os.path.join(ROOT_DIR, 'stuff_'+DATASET+'2017.json')
 
-METADATA_SAVE_DIR = '/home/ssunda11/Dog_Fixations/Metadata'
+METADATA_SAVE_DIR = './COCO'
 METADATA_SAVE_DIR = os.path.join(METADATA_SAVE_DIR,'coco_2017_'+DATASET+'_metadata.json')
 
 relevant_classes = ['bear', 'branch','building-other','bush', 'fence', 'flower', 'grass', 'house', 'pavement', 'plant-other', 'road', 'sky-other',\
