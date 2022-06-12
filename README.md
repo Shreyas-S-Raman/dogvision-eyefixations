@@ -73,6 +73,7 @@ Run ```bash pip3 install -r requirements.txt```
 4. Access the [Google Drive link](https://drive.google.com/drive/folders/1LlePbNRisWorv8ycHr1H-uwVirSKSbDO?usp=sharing) that contains the parsed datasets used (COCO, OpenImagesV6, CityScapes and custom video) and the model weights from our fine-tuned experiments
 
   * from `github_data/datasets` in Google Drive, copy the zip files for each dataset into the `dogvision-eyefixations/Datasets` folder within the repo
+  * from `github_data/datasets/raw_videos' in Google Drive, copy the zip file for each video into the `dogvision-eyefixations/Datasets/Raw_Videos` folder within the repo
   * from `github_data/weights/experiment_<experiment number>` in Google Drive, copy the weight files (formatted as `epoch_<epoch no>_<date>_<time>.h5`) into their respective folders within the repo i.e. `dogvision-eyefixations/Mask_RCNN/mrcnn_pretrained_implementation/logs/experiment_<experiment number>/weights`
   * from `github_data/coco_default` in Google Drive, copy the `coco_weights.zip` file into `dogvision-eyefixations/Mask_RCNN/samples/coco` in the repo
 
