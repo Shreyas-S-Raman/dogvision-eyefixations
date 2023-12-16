@@ -7,6 +7,7 @@ sys.path.append(os.path.relpath('..'))
 from mrcnn import utils
 import mrcnn.model as MRCNN_model
 from mrcnn import visualize
+from mrcnn.visualize import display_instances
 from mrcnn.config import Config
 import pandas as pd
 import tensorflow as tf
@@ -17,6 +18,10 @@ import pdb
 import numpy as np
 import cv2
 from PIL import Image
+import random
+
+#global CLASS_COLORS
+#CLASS_COLORS = None
 
 def computeIoU(mask1, mask2):
     '''computes IoU for 2 binary masks'''
@@ -48,6 +53,8 @@ def increment_class_counts(test_dataset, class_counts):
     test_dataset_unique_classes = []
 
     for row in test_dataset.iterrows():
+        
+        curr_class_counts = {}	
 
         class_string = row[1]['class_list']
 
@@ -62,14 +69,88 @@ def increment_class_counts(test_dataset, class_counts):
 
         for class_name in gt_classes:
             class_counts[class_name] += 1
+	    
 
     return test_dataset_classes, test_dataset_unique_classes
+
+def populate_confusion_matrix(gt_class_masks, pred_classes, pred_masks, confusion_matrix):
+    #pdb.set_trace()
+    gt_classes = []
+    gt_masks = []
+    for (k,v) in gt_class_masks.items():
+        gt_classes += [k]*len(v)
+        gt_masks += v
+    
+
+   
+    temp_confusion_matrix = {class_name: {class_name: 0 for class_name in list(TARGET_CLASSES) + ['background']} for class_name in list(TARGET_CLASSES) + ['background']}
+
+    pred_matching_gt = []
+
+    for i in range(pred_masks.shape[-1]):
+        max_IoU = float('-inf'); max_IoU_idx = None
+        for j, gt_mask in enumerate(gt_masks):
+
+            if computeIoU(pred_masks[:,:,i], gt_mask) > max_IoU and computeIoU(pred_masks[:,:,i], gt_mask)>0:
+                max_IoU = computeIoU(pred_masks[:,:,i], gt_mask)
+                max_IoU_idx = j
+
+        pred_matching_gt.append(max_IoU_idx)
+    #pdb.set_trace()
+    #check in case of false negatives
+    missing_gt_idxs = list( set(range(len(gt_masks))) - set(pred_matching_gt)  )
+    missing_gt_matching_pred = []
+
+    for idx in missing_gt_idxs:
+        max_IoU = float('-inf'); max_IoU_idx = None
+        for i in range(pred_masks.shape[-1]):
+
+            if computeIoU(pred_masks[:,:,i], gt_masks[idx]) > max_IoU and computeIoU(pred_masks[:,:,i], gt_masks[idx])>0:
+                max_IoU = computeIoU(pred_masks[:,:,i], gt_mask[idx])
+                max_IoU_idx = i
+
+        missing_gt_matching_pred.append(max_IoU_idx)
+
+
+    #populate counts to confusion matrix
+
+    for i, idx in enumerate(pred_matching_gt):
+	
+        if idx is None:
+            #confusion_matrix['background'][pred_classes[i]] += 1
+            temp_confusion_matrix['background'][pred_classes[i]] += 1
+            continue
+        #confusion_matrix[gt_classes[idx]][pred_classes[i]] += 1
+        temp_confusion_matrix[gt_classes[idx]][pred_classes[i]] += 1
+
+    for i, idx in zip(missing_gt_idxs, missing_gt_matching_pred):
+        if idx is None:
+            temp_confusion_matrix[gt_classes[i]]['background']+=1
+            #confusion_matrix[gt_classes[i]]['background']+=1
+            continue
+        #confusion_matrix[gt_classes[i]][pred_classes[idx]] += 1
+        temp_confusion_matrix[gt_classes[i]][pred_classes[idx]] += 1
+
+    for c in set(gt_classes):
+        assert(gt_classes.count(c) <= sum(temp_confusion_matrix[c].values())), 'ERROR: sum for {} was {}, expected {}'.format(c, sum(temp_confusion_matrix[c].values()), gt_classes.count(c))
+        #assert(gt_classes.count(c) <= sum(temp_confusion_matrix[c].values()))
+    #pdb.set_trace()
+    return temp_confusion_matrix
+
+def convert_to_class_counts(examples_class_set, example_classes):
+    
+    class_counts = {c: 0 for c in examples_class_set}
+    
+    for e in example_classes:
+            class_counts[e] += 1
+    return class_counts
 
 def get_gt_masks(test_dataset, annotation_content):
     '''store dictionary of boolean masks for each test image'''
 
     #dictionary of masks per image
     test_dataset_masks = []
+    all_class_counts = {}
 
     for row in test_dataset.iterrows():
 
@@ -99,16 +180,23 @@ def get_gt_masks(test_dataset, annotation_content):
                 image_masks[class_name] = []
 
             image_masks[class_name].append(annot_mask)
-
+            
+            if class_name not in all_class_counts:
+                all_class_counts[class_name] = 0
+            all_class_counts[class_name] += 1
+        
         #add all image masks to dataset list
         if len(list(image_masks.keys())) > 0:
             test_dataset_masks.append(image_masks)
-
+        else:
+            print('NO GT MASKS FOUND')
+            #test_dataset_masks.append(image_masks)
+    print('gt mask: class counts: ', all_class_counts)
     return test_dataset_masks
 
 #list of target classes to detect
 TARGET_CLASSES = set(['person', 'plant_horizontal', 'plant_vertical','building','sky','bench_chair','pavement','pole','sign','construction','bicycle','scooter','car','bus','sculpture'])
-
+TARGET_CLASSES_LIST = list(TARGET_CLASSES)
 
 #create arg parser for experiment no
 parser = argparse.ArgumentParser()
@@ -116,10 +204,15 @@ parser.add_argument('--experiment', choices = ['1','2','3','4','5','6','7','8','
 parser.add_argument('--weights_file', required = False)
 parser.add_argument('--num_classes', required = False, default = None)
 parser.add_argument('--default', required = True, choices = ["True", "False"])
+parser.add_argument('--randomize', required=True, choices=["True", "False"])
+parser.add_argument('--visualize', required=False, action='store_true')
 
+parser.add_argument('--add_labels', required=True, choices=["True", "False"])
 
 args = parser.parse_args()
 args.default = True if args.default == 'True' else False
+args.randomize = True if args.randomize == 'True' else False
+args.add_labels = True if args.add_labels == 'True' else False
 
 class InferenceConfig(Config):
 
@@ -189,7 +282,7 @@ def convert_polygon_percentage(polygon_coord, img_size):
 
 #check default v.s. experiment from args + assign to global configs below
 WEIGHTS_FILE = None; CLASS_NAMES = None; CONFIG = None
-IMAGE_DIR = os.path.relpath('../../../Datasets/Dog_Video_Frames/images')
+IMAGE_DIR = os.path.relpath('../../Datasets/dog_video_dataset/images')
 
 extension = 'default' if bool(args.default) else 'experiment_{}'.format(int(args.experiment))
 SAVE_DIR = os.path.relpath('./evaluation_output/{}'.format(extension))
@@ -198,8 +291,8 @@ SAVE_DIR = os.path.relpath('./evaluation_output/{}'.format(extension))
 if not os.path.isdir(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
-DATASET_FILE = os.path.join('../../../Datasets/Dog_Video_Frames/split_dataset.csv')
-ANNOTATION_FILE = os.path.join('../../../Datasets/Dog_Video_Frames/annotations.json')
+DATASET_FILE = os.path.join('../../Datasets/dog_video_dataset/split_dataset.csv')
+ANNOTATION_FILE = os.path.join('../../Datasets/dog_video_dataset/annotations.json')
 
 #load json annotations file
 with open(ANNOTATION_FILE,'r') as f:
@@ -240,7 +333,7 @@ else:
     weight_filename = sorted(os.listdir(trained_weights))[int(args.weights_file)]
 
     WEIGHTS_FILE = os.path.relpath('logs/experiment_{}/weights/{}'.format(int(args.experiment), weight_filename))
-
+    print(WEIGHTS_FILE)
 
     #store class names in order based on number of classes
     class_names_dict = {48: ['BG','dog','cat','squirrel','rabbit','bird','duck','raccoon','hamster','mouse','lizard','insect','bear','deer','horse',
@@ -276,6 +369,7 @@ CONFIG.display()
 
 
 Mask_RCNN_model = MRCNN_model.MaskRCNN(mode="inference", model_dir ='./' , config = CONFIG)
+#pdb.set_trace()
 Mask_RCNN_model.load_weights(WEIGHTS_FILE, by_name = True)
 
 '''Step 3: run inference predictions on all test set samples'''
@@ -289,11 +383,17 @@ print("Running inference on visual samples...")
 # masks: [H, W, N] instance binary masks
 
 #pdb.set_trace()
-predictions = Mask_RCNN_model.detect(visualized_test, verbose=1)
 
+if args.visualize:
+    predictions = Mask_RCNN_model.detect(visualized_test, verbose=1)
 
-# display_instances(image, boxes, masks, class_ids, class_names, scores=None, title="", figsize=(16, 16), ax=None, show_mask=True, show_bbox=True, colors=None, captions=None):
-#
+    #display_instances(image, boxes, masks, class_ids, class_names, scores=None, title="", figsize=(16, 16), ax=None, show_mask=True, show_bbox=True, colors=None, captions=None, class_labels=args.add_labels)
+
+    for i, prediction in enumerate(predictions):
+        test_pred = predictions[i]
+        masked_image = display_instances(visualized_test[i], test_pred['rois'], test_pred['masks'], test_pred['class_ids'], CLASS_NAMES, scores=test_pred['scores'], class_labels = args.add_labels)
+        plt.imshow(masked_image)
+        plt.savefig(os.path.join(SAVE_DIR, 'sample_{}.png'.format(i)))
 #     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
 #     masks: [height, width, num_instances]
 #     class_ids: [num_instances]
@@ -306,29 +406,34 @@ predictions = Mask_RCNN_model.detect(visualized_test, verbose=1)
 #     captions: (optional) A list of strings to use as captions for each object
 
 
-for i,prediction in enumerate(predictions):
-
-    test_pred = predictions[i]
-    masked_image  = visualize.display_instances(visualized_test[i], test_pred['rois'], test_pred['masks'], test_pred['class_ids'], CLASS_NAMES, scores= test_pred['scores'])
-
-    plt.imshow(masked_image)
-    plt.savefig(os.path.join(SAVE_DIR, 'sample_{}.png'.format(i)) )
+#for i,prediction in enumerate(predictions):
+#
+#    test_pred = predictions[i]
+#    masked_image  = display_instances(visualized_test[i], test_pred['rois'], test_pred['masks'], test_pred['class_ids'], CLASS_NAMES, scores= test_pred['scores'])
+#
+#    plt.imshow(masked_image)
+#    plt.savefig(os.path.join(SAVE_DIR, 'sample_{}.png'.format(i)) )
 
 
 
 #pdb.set_trace()
 '''Step 4: run overall prediction +  save final accuracies and IoUs'''
+confusion_matrix = {class_name: {class_name: 0 for class_name in list(TARGET_CLASSES) + ['background']} for class_name in list(TARGET_CLASSES) + ['background']}
 
 #class prediction + IoU prediction dictionaries
 class_counts = {class_name:0 for class_name in TARGET_CLASSES}; class_pred_counts = {class_name: 0 for class_name in TARGET_CLASSES}
+class_pred_counts_capped = {class_name:0 for class_name in TARGET_CLASSES}
 class_confidences = {class_name:0 for class_name in TARGET_CLASSES}; iou_predictions = {class_name:0 for class_name in TARGET_CLASSES}
 
 false_negatives = {class_name:0 for class_name in TARGET_CLASSES}; false_positives = {class_name:0 for class_name in TARGET_CLASSES}
 
+print(TARGET_CLASSES)
+print(iou_predictions)
+#pdb.set_trace()
 #read csv file into dataframe
 test_dataset = pd.read_csv(DATASET_FILE)
 test_dataset = test_dataset[test_dataset['subset']=='test']
-
+#pdb.set_trace()
 #populate target class_counts dict
 gt_classes, gt_unique_classes = increment_class_counts(test_dataset, class_counts)
 
@@ -367,40 +472,59 @@ for i, image in enumerate(test_dataset):
     image_pred = Mask_RCNN_model.detect([image], verbose=1)[0]
 
     #pdb.set_trace()
-
+    print('Done prediction!')
+    pred_counts = {class_name:0 for class_name in TARGET_CLASSES}
 
     #convert class ids to class name predictions
-    class_predictions = [CLASS_NAMES[class_id] for class_id in image_pred['class_ids']]
+    if not args.randomize:
+        class_predictions = [CLASS_NAMES[class_id] for class_id in image_pred['class_ids']]
+    else:
+        class_predictions = [TARGET_CLASSES_LIST[random.sample(range(0,len(TARGET_CLASSES_LIST)), k=1)[0]] for class_id in image_pred['class_ids']]
 
+    print('Convereted class id to names')
 
-
-    for gt_class in gt_unique_classes[i]:
+    image_gt_class_counts = convert_to_class_counts(gt_classes[i],gt_unique_classes[i])
+    print('Ran convert_to_class_counts')
+    #pdb.set_trace()
+    for gt_class in gt_classes[i]:
 
         #false negative counts
         if gt_class not in set(class_predictions):
             false_negatives[gt_class] += 1
 
-
+    print('Populated false negatives')
+    
     for c, class_name in enumerate(class_predictions):
 
 
         #class prediction counts
-        if (class_name in TARGET_CLASSES) and (class_name in gt_classes[i]):
+        
+        if (class_name in TARGET_CLASSES) and (class_name in gt_classes[i]) and (class_name in gt_masks[i]):
 
             increment_class_confidences(class_confidences, class_name, image_pred['scores'][c])
 
             '''TODO: update to find gt mask and pred mask with highest IoU + report/store that'''
-            increment_iou_predictions(image_pred['masks'][:,:,c], gt_masks[i][class_name], class_name)
-
+            try:            
+                increment_iou_predictions(image_pred['masks'][:,:,c], gt_masks[i][class_name], class_name)
+            except:
+                pdb.set_trace()
+            #if pred_counts[class_name] < image_gt_class_counts[class_name]:
+            #    pred_counts[class_name] += 1
+            #    class_pred_counts_capped[class_name] += 1
             class_pred_counts[class_name] += 1
 
+        print('Incremented Counts')
 
         #false positive counts
         if (class_name in TARGET_CLASSES) and (class_name not in gt_classes[i]):
             false_positives[class_name] += 1
-
-
-
+        print('Increment FP')
+    print('Incremented FP, IOU, Counts')
+    temp_confusion_matrix = populate_confusion_matrix(gt_masks[i], class_predictions, image_pred['masks'], confusion_matrix)
+    
+    for c1 in temp_confusion_matrix.keys():
+        for c2 in temp_confusion_matrix[c1].keys():
+            confusion_matrix[c1][c2] += temp_confusion_matrix[c1][c2]
 
 
 '''Step 5: Save final output: visualization images and csv files'''
@@ -421,9 +545,12 @@ metrics_dataframe = pd.DataFrame(columns = ["class","count","true_positives", "c
 
 for class_name in TARGET_CLASSES:
 
-    data_row = {"class":class_name, "count": class_counts[class_name], "true_positives": class_pred_counts[class_name] , "confidence": class_confidences[class_name],"iou": iou_predictions[class_name],"false_negatives": false_negatives[class_name],"false_positives": false_positives[class_name], "FNR": FNR[class_name], "FPR":FPR[class_name]}
+    data_row = {"class":class_name, "count": class_counts[class_name], "true_positives": class_pred_counts_capped[class_name] , "confidence": class_confidences[class_name],"iou": iou_predictions[class_name],"false_negatives": false_negatives[class_name],"false_positives": false_positives[class_name], "FNR": FNR[class_name], "FPR":FPR[class_name]}
 
     metrics_dataframe = metrics_dataframe.append(data_row, ignore_index = True)
 
 
 metrics_dataframe.to_csv(os.path.join(SAVE_DIR, 'metrics.csv'))
+
+print('Confusion Matrix')
+print(confusion_matrix)

@@ -2,20 +2,31 @@ import pandas as pd
 import argparse
 import os
 import sys
-sys.append('..')
+sys.path.append('..')
+import random
 import pdb
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy.stats import chisquare
 
+def chi2_distance(A, B):
+ 
+    # compute the chi-squared distance using above formula
+    chi = 0.5 * np.sum([((a - b) ** 2) / (a + b)
+                      for (a, b) in zip(A, B) if not (a==0 and b==0)])
+    
+ 
+    return chi
 
 #create parser to access the dog name to compute distribution for
 parser = argparse.ArgumentParser()
-parser.add_argument('--dog_name', required = True, choices = ['daisy','suna','kermit','goose','all'])
+parser.add_argument('--dog_name', required = True, choices = ['daisy','suna','kermit','goose','all_dogs'])
 parser.add_argument('--experiment', required = True, choices = ['1','2','3','4','5','6','7','8','9'])
+parser.add_argument('--randomize', required=True, choices=['True','False'])
 #parser.add_argument('--only_test', required = True, choices = ['True','False'])
 args = parser.parse_args()
 
-
+args.randomize = True if args.randomize == 'True' else False
 
 CLASSES_LIST = ['person', 'plant_horizontal', 'plant_vertical','building','sky','bench_chair','pavement','pole','sign','construction','bicycle','scooter','car','bus','sculpture','background']
 DOGNAME_LIST = ['daisy','kermit','suna','goose']
@@ -23,24 +34,25 @@ DOGNAME_LIST = ['daisy','kermit','suna','goose']
 
 SAVE_PATH = os.path.relpath('../experiment_{}/experiment_{}/{}'.format(args.experiment, args.experiment, args.dog_name))
 
+print(SAVE_PATH)
 if not os.path.isdir(SAVE_PATH):
-    os.makedir(SAVE_PATH)
+    os.mkdir(SAVE_PATH)
 
 
 #getting subset of ground truth csv file with predictions
-if args.dog_name == 'all':
+if args.dog_name == 'all_dogs':
 
-    ground_truth = pd.read_csv('ground_truth/ground_truth/{}.csv'.format(DOGNAME_LIST[0]))
+    ground_truth = pd.read_csv('../ground_truth/ground_truth/{}.csv'.format(DOGNAME_LIST[0]))
 
     for name in DOGNAME_LIST[1:]:
-        ground_truth = ground_truth.append( pd.read_csv('ground_truth/ground_truth/{}.csv'.format(name)), ignore_index = True)
+        ground_truth = ground_truth.append( pd.read_csv('../ground_truth/ground_truth/{}.csv'.format(name)), ignore_index = True)
 else:
     ground_truth = pd.read_csv('../ground_truth/ground_truth/{}.csv'.format(args.dog_name))
 
 ground_truth = ground_truth[ground_truth['union_areas'].notnull()]
 
 #collecting + filtering subset of matching fixations from predictions
-if args.dog_name == 'all':
+if args.dog_name == 'all_dogs':
     fixation_predictions = pd.read_csv('../experiment_{}/experiment_{}/{}.csv'.format(args.experiment, args.experiment, DOGNAME_LIST[0]))
 
     for name in DOGNAME_LIST[1:]:
@@ -95,17 +107,42 @@ for gt_row, fixation_row in zip(ground_truth.iterrows(), fixation_predictions.it
         predicted_fixations[predicted_fixation[i][:-1]] = float(predicted_fixation[i+1])
 
 
+    if args.randomize: 
+        sampled_classes = random.sample(CLASSES_LIST[:-1], len(list(predicted_fixations.keys())))
+
+        classes = list(predicted_fixations.keys())
+
+        for i, k in enumerate(classes):
+            predicted_fixations[sampled_classes[i]] = predicted_fixations[k]
+
+            if k != sampled_classes[i]:
+                del predicted_fixations[k]
+
     all_fixation_classes = set(list(gt_fixations.keys()) + list(predicted_fixations.keys()))
-    total_chi_dist = 0
+    
+    
+    
+    
+    gt_overlaps = []; pred_overlaps = []
 
     for c in all_fixation_classes:
+        gt_overlaps.append(gt_fixations[c] if c in gt_fixations else 0)
+        pred_overlaps.append(predicted_fixations[c] if c in predicted_fixations else 0)
 
+
+    total_chi_dist = chi2_distance(pred_overlaps, gt_overlaps)
+
+   
+    
+    for c in all_fixation_classes:
+        
         gt_overlap = gt_fixations[c] if c in gt_fixations.keys() else 0
         pred_overlap = predicted_fixations[c] if c in predicted_fixations.keys() else 0
 
-        total_chi_dist += ((pred_overlap-gt_overlap)**2)/(pred_overlap + gt_overlap)
+        if c not in fixation_area_diff:
+            fixation_area_diff[c] = 0
 
-        fixation_area_diff[c] = pred_overlap - gt_overlap
+        fixation_area_diff[c] += pred_overlap - gt_overlap
 
         if c not in max_fixation_area_diff:
             max_fixation_area_diff[c] = 0
@@ -117,7 +154,7 @@ for gt_row, fixation_row in zip(ground_truth.iterrows(), fixation_predictions.it
             fixation_class_counts[c] = 0
         fixation_class_counts[c] += 1
 
-    total_chi_dist  = 0.5*total_chi_dist/len(all_fixation_classes) if len(all_fixation_classes)>0 else 0
+    
     chi_square_distance.append(total_chi_dist)
 
 
@@ -144,7 +181,9 @@ for gt_row, fixation_row in zip(ground_truth.iterrows(), fixation_predictions.it
         gt_a = gt_areas[c] if c in gt_areas.keys() else 0
         pred_a = predicted_areas[c] if c in predicted_areas.keys() else 0
 
-        percentage_area_diff[c] = pred_a - gt_a
+        if c not in percentage_area_diff:
+            percentage_area_diff[c] = 0
+        percentage_area_diff[c] += pred_a - gt_a
 
         if c not in max_percentage_area_diff:
             max_percentage_area_diff[c] = 0
@@ -166,7 +205,7 @@ for c in percentage_area_diff.keys():
     percentage_area_diff[c] = percentage_area_diff[c]/percentage_class_counts[c]
 
 #plot histogram distribution of chi square distance
-bins = np.linspace(0, 0.6, 20)
+bins = np.linspace(0, np.max(chi_square_distance), 20)
 fig, ax = plt.subplots()
 values, bins, __  = ax.hist(chi_square_distance, bins = bins)
 val_sum = sum(values)
@@ -184,7 +223,8 @@ plt.show()
 #printing final statistical results
 print('Mean Chi-Square Dist: ', np.mean(chi_square_distance))
 print('Variance Chi-Square Dist: ', np.var(chi_square_distance))
-print('95th Percentile Chi-Square: ', np.percentile(chi_square_distance, 95))
+
+print('90th Percentile Chi-Square: ', np.percentile(chi_square_distance, 90))
 print('Union Area Mean: ', mean_areas)
 print('Union Area Variance: ', var_areas)
 

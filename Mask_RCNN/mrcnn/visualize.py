@@ -32,6 +32,8 @@ from mrcnn import utils
 #  Visualization
 ############################################################
 
+CLASS_COLORS = None
+
 def display_images(images, titles=None, cols=4, cmap=None, norm=None,
                    interpolation=None):
     """Display the given set of images, optionally with titles.
@@ -84,7 +86,7 @@ def display_instances(image, boxes, masks, class_ids, class_names,
                       scores=None, title="",
                       figsize=(16, 16), ax=None,
                       show_mask=True, show_bbox=True,
-                      colors=None, captions=None):
+                      colors=None, captions=None, class_labels=True):
     """
     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
     masks: [height, width, num_instances]
@@ -111,8 +113,10 @@ def display_instances(image, boxes, masks, class_ids, class_names,
         auto_show = True
 
     # Generate random colors
-    colors = colors or random_colors(N)
-
+    #colors = colors or random_colors(N)
+    global CLASS_COLORS
+    if CLASS_COLORS is None:
+        CLASS_COLORS = random_colors(len(class_names))
     # Show area outside image boundaries.
     height, width = image.shape[:2]
     ax.set_ylim(height + 10, -10)
@@ -122,8 +126,8 @@ def display_instances(image, boxes, masks, class_ids, class_names,
 
     masked_image = image.astype(np.uint32).copy()
     for i in range(N):
-        color = colors[i]
-
+        #color = colors[i]
+        color = CLASS_COLORS[class_ids[i]]
         # Bounding box
         if not np.any(boxes[i]):
             # Skip this instance. Has no bbox. Likely lost in image cropping.
@@ -136,15 +140,15 @@ def display_instances(image, boxes, masks, class_ids, class_names,
             ax.add_patch(p)
 
         # Label
-        if not captions:
-            class_id = class_ids[i]
-            score = scores[i] if scores is not None else None
-            label = class_names[class_id]
-            caption = "{} {:.3f}".format(label, score) if score else label
-        else:
-            caption = captions[i]
-        ax.text(x1, y1 + 8, caption,
-                color='w', size=11, backgroundcolor="none")
+        if class_labels:
+            if not captions:
+                class_id = class_ids[i]
+                score = scores[i] if scores is not None else None
+                label = class_names[class_id]
+                caption = "{} {:.3f}".format(label, score) if score else label
+            else:
+                caption = captions[i]
+            ax.text(x1, y1 + 5, caption,color='w', size=14, backgroundcolor='k')
 
         # Mask
         mask = masks[:, :, i]
