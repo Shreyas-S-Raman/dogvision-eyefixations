@@ -175,6 +175,7 @@ Use the [scripts](results/scripts) provided to compare fixation predictions with
 ## Future Ideas
 
 This project will continue to develop and grow. Here are some features we plan to implement in the near future:
+* leveraging this system to evaluate dogs' reasoning ability in task-directed settings
 * implement object detection and segmentation on live video
 * expand the existing dataset using video footage from new dogs
 * fine-tune models on new sets of objects + refine model performance
