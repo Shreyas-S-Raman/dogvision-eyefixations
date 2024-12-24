@@ -2,7 +2,7 @@
 #### [[ArXiV]]([URL](https://arxiv.org/abs/2311.11988))
 
 
-[Shreyas S Raman]([https://wenlong.page](https://shreyasraman.netlify.app/))<sup>1</sup>, [Madeline H Pelgrim](https://mpelgrim.github.io/)<sup>2</sup>, [Daphna Buchsbaum](https://vivo.brown.edu/display/dbuchsba)\<sup>2</sup>, [Thomas Serre](https://serre-lab.clps.brown.edu/person/thomas-serre/)\<sup>3</sup>
+[Shreyas S Raman]([https://wenlong.page](https://shreyasraman.netlify.app/))<sup>1</sup>, [Madeline H Pelgrim](https://mpelgrim.github.io/)<sup>2</sup>, [Daphna Buchsbaum](https://vivo.brown.edu/display/dbuchsba)<sup>2</sup>, [Thomas Serre](https://serre-lab.clps.brown.edu/person/thomas-serre/)<sup>1</sup>
 
 <sup>1</sup>Department of Computer Science, Brown University | <sup>2</sup> Department of Cognitive & Psychological Sciences, Brown University
 ---
