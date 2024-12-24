@@ -166,7 +166,7 @@ Each image has been manually annotated using polygon annotations (see below)
 
 # Results
 
-An overview of our most interesting findings (averaged across all dogs) are visually presented below. For a more expansive exploration and thorough analysis of results, for each individual dog in the study, please refer to the [associated work](paper link)
+An overview of our most interesting findings (averaged across all dogs) are visually presented below
 
 ![Fixation Distribution](assets/distribution.png)
 ![Radius of Fixation Overlap](assets/overlap_plot.png)
