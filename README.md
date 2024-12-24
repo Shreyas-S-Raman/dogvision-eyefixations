@@ -1,4 +1,9 @@
-# Dog Vision: Using object-detection to track visual behavior patterns in dogs
+# Categorizing the Visual Environment and Analyzing the Visual Attention of Dogs
+[ArXiV]([URL](https://arxiv.org/abs/2311.11988))
+[Shreyas S Raman]([https://wenlong.page](https://shreyasraman.netlify.app/))<sup>1</sup>, [Madeline H Pelgrim](https://mpelgrim.github.io/)<sup>2</sup>, [Daphna Buchsbaum](https://vivo.brown.edu/display/dbuchsba)\<sup>2</sup>, [Thomas Serre](https://serre-lab.clps.brown.edu/person/thomas-serre/)\<sup>3</sup>
+
+<sup>1</sup>Department of Computer Science, Brown University | <sup>2</sup> Department of Cognitive & Psychological Sciences, Brown University
+---
 
 This project utilizes the [Mask RCNN](https://arxiv.org/abs/1703.06870) provided by [matterport](https://github.com/matterport/Mask_RCNN) (on Python3, Keras and Tensorflow) to perform scene segmentation and object detection on images captured by a calibrated eye-tracking camera fitted on dogs.
 
