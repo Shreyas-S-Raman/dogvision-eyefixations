@@ -1,4 +1,4 @@
-## Language Models as Zero-Shot Planners:<br>Extracting Actionable Knowledge for Embodied Agents
+## Categorizing the Visual Environment and Analyzing the Visual Attention of Dogs
 
 #### [[ArXiV]](https://arxiv.org/abs/2311.11988) 
 
